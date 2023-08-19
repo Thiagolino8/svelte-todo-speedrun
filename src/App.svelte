@@ -7,44 +7,33 @@
 		completed: boolean
 	}
 
-	const localStorageKey = 'svelte-todos'
+	const storageKey = 'svelte-todos'
 
-	function recoverTodos() {
-		return JSON.parse(localStorage.getItem(localStorageKey)) as Todo[] | null
-	}
-
-	let todos: Todo[] = recoverTodos() || []
+	let todos: Todo[] = JSON.parse(localStorage.getItem(storageKey)) || []
 	let newTodoTitle = ''
 
-	function addTodo(title: string) {
-		todos.push({ title, completed: false })
-		todos = todos
-	}
-
-	function removeTodo(title: string) {
-		const index = todos.findIndex((todo) => todo.title === title)
-		todos.splice(index, 1)
-		todos = todos
-	}
-
 	function handleSubmit() {
-		addTodo(newTodoTitle)
+		todos = [...todos, { title: newTodoTitle, completed: false }]
 		newTodoTitle = ''
 	}
 
-	$: localStorage.setItem(localStorageKey, JSON.stringify(todos))
+	function deleteTodo(title: string) {
+		todos = todos.filter((todo) => todo.title !== title)
+	}
+
+	$: localStorage.setItem(storageKey, JSON.stringify(todos))
 </script>
 
 <form on:submit|preventDefault={handleSubmit}>
 	<input bind:value={newTodoTitle} />
-	<button>Add todo</button>
+	<button>Add Todo</button>
 </form>
 
 {#each todos as todo (todo)}
-	<div transition:fade animate:flip>
+	<div animate:flip transition:fade>
 		<input type="checkbox" bind:checked={todo.completed} />
 		<input bind:value={todo.title} class:completed={todo.completed} />
-		<button on:click={() => removeTodo(todo.title)}>x</button>
+		<button on:click={() => deleteTodo(todo.title)}>x</button>
 	</div>
 {/each}
 
